@@ -1,9 +1,10 @@
-class Person():
-    def __init__(self, name, surname, city):
-        if isinstance(name, str) and isinstance(surname, str) and isinstance(city, str):
-            self.name = name
-            self.surname = surname
+class Person:
+    def __init__(self, first_name, last_name, city):
+        if isinstance(first_name, str) and isinstance(last_name, str) and isinstance(city, str):
+            self.first_name = first_name
+            self.last_name = last_name
             self.city = city
+
         else:
             raise ValueError('Non correct value')
 

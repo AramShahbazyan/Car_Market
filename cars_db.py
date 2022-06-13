@@ -1,5 +1,4 @@
 import sqlite3
-from car import Car
 
 with sqlite3.connect("car.db") as db:
     curs = db.cursor()

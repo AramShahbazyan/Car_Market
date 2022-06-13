@@ -9,52 +9,69 @@
 # 4. add_bought_cars - ավելացնելու է գնված մեքենան bought_cars֊ում։ Պետք է նշվի մեքենայի մոդելը,
 # վաճառողի անուն/ազգանուն/քաղաք, գործարքի ամիս ամսաթիվը  հետևյալ ֆորմատով՝ "տարի-ամիս֊օր"
 # 5. print_my_cars - ցույց կտա գնորգի գնված մեքենաները։ Լինելու է public method
+from datetime import datetime
 
+from carMarket import CarMarket
 from person import Person
-import sqlite3
+
+from car import Car
+from seller import Seller
 
 
 class Buyer(Person):
-    def __init__(self, buy_money, name, surname, city):
-        if isinstance(buy_money, int):
-            super().__init__(name, surname, city)
-            self.spent_money = 0
-            self.buy_money = buy_money
-            self.bought_cars = []
-        else:
-            raise ValueError('Non correct value')
 
-    def buy(self, seller_name):
-        if isinstance(seller_name, str):
-            with sqlite3.connect("car.db") as db:
-                curs = db.cursor()
-                curs.execute("SELECT seller FROM cars_store")
-                ls_seller = curs.fetchall()
-                print(ls_seller)
-                for sel in ls_seller:
-                    print(sel)
-                    if sel == seller_name:
-                        self.bought_cars.append(curs.execute("SELECT seller FROM cars_store"))
-                    else:
-                        raise ValueError('This name seller not')
+    def __init__(self, first_name, last_name, city, money=50000):
+        super().__init__(first_name, last_name, city)
+        self.money = money
+        self.spent_money = 0
+        self.bought_cars = {}
 
-        else:
-            raise ValueError('Non correct value')
+    def generate_key(self):
+        key = 1
+        while True:
+            if key in list(self.bought_cars.keys()):
+                key += 1
+            else:
+                return key
 
-    def return_car(self):
-        pass
+    def buy(self, car: Car, seller: Seller):
+        self.add_bought_cars(car, seller)
+        self.money -= car.price - car.discount
+        self.spent_money += car.price - car.discount
 
-    def __change_money(self):
-        pass
+    def return_car(self, car: Car):
+        self.bought_cars.pop(car)
+        self.money += car.price - car.discount
 
-    def add_bought_cars(self, ):
-        pass
+    def change_money(self, money):
+        self.money += money
+
+    def add_bought_cars(self, car, seller: Seller):
+        key = self.generate_key()
+        self.bought_cars[key] = {
+            'car': car,
+            'date': datetime.now().strftime("%d-%B-%Y"),
+            'seller': {
+                'name': seller.first_name,
+                'lastname': seller.last_name,
+                'city': seller.city
+            }
+        }
 
     def print_my_cars(self):
-        pass
+        for i in self.bought_cars:
+            print(self.bought_cars[i]['car'])
 
 
-b = Buyer(500000, 'dero', 'karapetyan', 'Yerevan')
-print(b.bought_cars)
-b.buy('dero')
-print(b.bought_cars)
+if __name__ == '__main__':
+    carpark = CarMarket.carpark
+    seller_1 = Seller('aram', 'shahbazyan', 'yerevan', carpark)
+    car_1 = Car('BMW', 5000, 1000)
+    buyer_1 = Buyer('meliq', 'harutyunyan', 'yerevan')
+
+    buyer_1.buy(car_1, seller_1)
+    buyer_1.print_my_cars()
+    print(buyer_1.bought_cars)
+    # add_new_car = CarMarket()
+    # add_new_car.add_car(car_1, seller_1)
+    print(carpark)

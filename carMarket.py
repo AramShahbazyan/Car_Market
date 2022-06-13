@@ -11,66 +11,49 @@
 # 6. get_seller_available_cars - վերադարձնելու է Seller-ի մոտ ներկա պահին վաճառվող մեքենաները։
 # Լինելու է protected method
 # 7․ get_car_available_discount -  կվերադարձնի մեքենայի համար հասանելի զեղչը:
-
 from car import Car
 from seller import Seller
-import sqlite3
 
 
-class CarMarket(Car):
-    def __init__(self, seller_name, make, model, year, price):
-        super().__init__(seller_name, make, model, year, price)
-        self.discount = 0
+class CarMarket:
+    carpark = {}
 
-    def add_car(self):
-        with sqlite3.connect("car.db") as db:
-            curs = db.cursor()
-            curs.execute("INSERT INTO cars_store VALUES (?, ?, ?, ?, ?, ?)",
-                         (self.seller_name, self.make, self.model, self.year, self.price, self.discount))
-        db.commit()
+    def generate_key(self, seller: Seller):
+        key = 1
+        while True:
+            if key in list(CarMarket.carpark[seller].keys()):
+                key += 1
+            else:
+                return key
 
-    def remove_car(self, name_seller):
-        with sqlite3.connect("car.db") as db:
-            curs = db.cursor()
-            remove_sel_car = f"DELETE FROM cars_store WHERE seller = '{name_seller}'"
-            curs.execute(remove_sel_car)
+    def add_car(self, car: Car, seller: Seller):
+        key = self.generate_key(seller)
+        CarMarket.carpark[seller.first_name][key] = {'model': car.model,
+                                                     'price': car.price,
+                                                     'discount': car.discount}
 
-    def set_discount(self, car_make, dis):
-        if isinstance(dis, int):
-            with sqlite3.connect("car.db") as db:
-                curs = db.cursor()
-                curs.execute("SELECT make FROM cars_store")
-                for i in curs.fetchall():
-                    if i[0] == car_make:
-                        discount_update = f"UPDATE  cars_store SET discount = '{dis}' WHERE make = '{car_make}'"
-                        curs.execute(discount_update)
+    # def set_discount(self, seller, index, dis):
+    #     if CarMarket.carpark[seller] == seller:
+    #         CarMarket.carpark[seller][index]['discount'] = dis
 
-    def __get_sold_car_history(self):
-        pass
+    # def get_sold_car_history(self):
 
-    def __return_car(self):
-        pass
+    # def return_car(self, seller: Seller, car: Car):
+    #     CarMarket.carpark
+    #
 
-    def get_seller_available_cars(self, seller_name):
-        with sqlite3.connect("car.db") as db:
-            curs = db.cursor()
-            seller_cars = f"SELECT * FROM cars_store WHERE seller = '{seller_name}'"
-            curs.execute(seller_cars)
-            for i in curs.fetchall():
-                print(i)
+    def get_seller_available_cars(self, seller: Seller):
+        for i in CarMarket.carpark:
+            if i == seller.first_name:
+                return CarMarket.carpark[i]
 
-    def get_car_available_discount(self):
-        pass
+    def get_car_available_discount(self, seller: Seller, key, car: Car):
+        return CarMarket.carpark[seller.first_name][key][car.discount]
 
-
-c = CarMarket('samo', 'AUDI', 'A8', 2021, 160000)
-c1 = CarMarket('dero', 'BMW', 'X5', 2020, 60000)
-c2 = CarMarket('vaxo', 'Mercrdrs', 'cls 550', 2022, 200000)
-c3 = CarMarket('makich', 'mazda', 'cx 5', 2019, 50000)
-# c.add_car()
-# c1.add_car()
-# c2.add_car()
-# c3.add_car()
-# c.remove_car('samo')
-# c.set_discount('BMW', 5)
-c.get_seller_available_cars('vaxo')
+market1 = CarMarket()
+carpark = CarMarket.carpark
+car1 = Car('BMW', 14000, 500)
+seller1 = Seller(first_name='eva', last_name='papoyan', car_park=carpark, city='yervan')
+# market1.add_car(car1, seller1)
+market1.add_car(car1, seller1)
+# market1.set_discount()
